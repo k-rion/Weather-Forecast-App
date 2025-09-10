@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .detail-row {
+    @apply flex justify-between py-2 border-b border-white/20 gap-20;
+  }
+
+  .detail-row:last-child {
+    @apply mt-0 border-b-0;
+  }
+
+  .thin-label {
+    @apply font-normal text-white text-[12px];
+  }
+
+  .detail-label {
+    @apply font-medium text-white text-[12px];
+  }
+
+  .detail-value {
+    @apply font-normal text-white text-[12px];
+  }
+}
