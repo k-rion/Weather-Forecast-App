@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { X } from "lucide-react";
 import { motion as Motion } from "framer-motion";
@@ -16,7 +16,9 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 export default function App() {
   const [weather, setWeather] = useState(null);
   const [city, setCity] = useState("");
-  const [videoUrl, setVideoUrl] = useState(sunny);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [unit, setUnit] = useState("F"); 
+  const videoRef = useRef(null);
 
   const fetchWeather = async () => {
     const trimmedCity = city.trim();
@@ -26,8 +28,9 @@ export default function App() {
     }
 
     try {
+      const units = unit === "F" ? "imperial" : "metric";
       const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${trimmedCity}&units=metric&appid=${API_KEY}`
+        `https://api.openweathermap.org/data/2.5/weather?q=${trimmedCity}&units=${units}&appid=${API_KEY}`
       );
 
       const data = await res.json();
@@ -56,7 +59,15 @@ export default function App() {
   const deleteSearch = () => {
     setCity("");
     setWeather(null);
-    setVideoUrl(sunny);
+    setVideoUrl(null);
+  };
+
+  const toggleUnit = () => {
+    const newUnit = unit === "F" ? "C" : "F";
+    setUnit(newUnit);
+    if (city.trim()) {
+      fetchWeather(); 
+    }
   };
 
   useEffect(() => {
@@ -69,7 +80,12 @@ export default function App() {
     return () => clearInterval(timer);
   }, [weather]);
 
-  // Format date and time
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  }, [videoUrl]);
+
   const formatDate = (date) => {
     const options = {
       weekday: "long",
@@ -124,6 +140,7 @@ export default function App() {
 
   const weatherIcons = {
     Clouds: "☁️",
+    Night: "🌙",
     Clear: "☀️",
     Rain: "🌧️",
     Snow: "❄️",
@@ -133,7 +150,7 @@ export default function App() {
   };
 
   const changeBackgroundVideo = (weatherCondition, timeOfDay) => {
-    let video = sunny; // default
+    let video = sunny; 
     if (timeOfDay === "night") {
       video = night;
     } else if (timeOfDay === "sunset") {
@@ -151,21 +168,14 @@ export default function App() {
   };
 
   return (
-    <div className="relative w-full min-h-screen">
-      {/* Video Background */}
+    <div className="relative w-full min-h-screen overflow-x-hidden">
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          zIndex: -1,
-        }}
+        playsInline
+        className="fixed top-0 left-0 w-full h-full object-cover -z-10"
       >
         <source src={videoUrl} type="video/mp4" />
         Your browser does not support the video tag.
@@ -173,23 +183,14 @@ export default function App() {
 
       <div
         aria-hidden="true"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundColor: "rgba(0,0,0,.35)",
-          zIndex: 0,
-        }}
+        className="fixed top-0 left-0 w-full h-full bg-black/40 -z-0"
       ></div>
 
-      {/* Search - ADD relative z-10 */}
-      <div className="relative z-10 flex flex-wrap justify-start pt-8 mx-4">
-        <label className="flex items-center gap-2 input input-bordered bg-[rgba(225,225,225,0.2)] w-60 h-6 rounded-xl text-[10px]">
+      <div className="relative z-10 flex flex-wrap justify-center pt-4 md:pt-8 px-4">
+        <label className="flex items-center gap-2 input input-bordered bg-[rgba(225,225,225,0.2)] w-full max-w-xs h-10 md:h-8 rounded-xl text-sm md:text-base">
           <input
             type="text"
-            className="text-white placeholder-white grow placeholder:text-[10px]"
+            className="text-white placeholder-white grow placeholder:text-sm md:placeholder:text-base"
             placeholder="Search for city...."
             onKeyDown={searchLocation}
             value={city}
@@ -197,28 +198,27 @@ export default function App() {
           />
           {city && (
             <button className="hover:text-red-400" onClick={deleteSearch}>
-              <X size={12} color="white" />
+              <X size={16} color="white" />
             </button>
           )}
         </label>
       </div>
 
-      {/* Weather Content */}
       {weather && (
-        <div className="relative z-10 mx-4 my-4 p-4 rounded-md bg-[rgba(225,225,225,0.2)]">
-          <div className="flex flex-wrap justify-between">
-            <div className="flex flex-col">
-              <h2 className="text-2xl font-medium text-white ">
+        <div className="relative z-10 mx-auto my-4 w-[90%] max-w-2xl p-4 rounded-md bg-[rgba(225,225,225,0.2)] backdrop-blur-sm">
+          <div className="flex flex-wrap justify-between items-start">
+            <div className="flex flex-col mb-2 md:mb-0">
+              <h2 className="text-xl md:text-2xl font-medium text-white">
                 {weather?.name || ""}
                 {weather?.sys?.country ? `, ${weather.sys.country}` : ""}
               </h2>
               <div className="date-time">
-                <p className="thin-label">{formatDate(cityTime)}</p>
+                <p className="thin-label text-xs md:text-sm">{formatDate(cityTime)}</p>
               </div>
             </div>
-            <div>
+            <div className="text-right">
               <Motion.div
-                className="text-5xl"
+                className="text-4xl md:text-5xl"
                 initial={{ scale: 0.8, rotate: 0 }}
                 animate={{
                   scale: [1, 1.2, 1],
@@ -237,66 +237,93 @@ export default function App() {
               >
                 {weatherIcons[weather?.weather?.[0]?.main] || "🌍"}
               </Motion.div>
-
-              <p className="capitalize thin-label opacity-80">
+              <p className="capitalize thin-label opacity-80 text-xs md:text-sm mt-1">
                 {weather?.weather?.[0]?.description}
               </p>
             </div>
           </div>
 
-          {/* 2nd Column */}
-          <p className="text-6xl font-medium text-white">
-            {weather?.main?.temp ? `${Math.round(weather.main.temp)}°C` : ""}
-          </p>
+          <div className="flex gap-2 items-center mt-4">
+            <p className="text-4xl md:text-6xl font-medium text-white">
+              {weather?.main?.temp
+                ? `${Math.round(weather.main.temp)}°${unit}`
+                : ""}
+            </p>
 
-          {/* 3rd Column - Simplified structure */}
-          <div className="flex flex-col mt-4">
-            <div className="detail-row">
-              <p className="detail-label">Feels Like</p>
-              <p className="detail-value">
-                {Math.round(weather?.main?.feels_like)}°
-              </p>
+            <button
+              onClick={toggleUnit}
+              className="px-2 py-1 text-white w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.3)] transition-colors"
+              aria-label="Toggle temperature unit"
+            >
+              <span className="font-bold text-sm md:text-base">
+                °{unit === "F" ? "C" : "F"}
+              </span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-xs md:text-sm">
+            <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
+              <p className="opacity-80">Feels Like</p>
+              <p className="text-white font-medium">{Math.round(weather?.main?.feels_like)}°{unit}</p>
             </div>
-            <div className="detail-row">
-              <p className="detail-label">Humidity</p>
-              <p className="detail-value">{weather?.main?.humidity}%</p>
+            <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
+              <p className="opacity-80">Humidity</p>
+              <p className="text-white font-medium">{weather?.main?.humidity}%</p>
             </div>
-            <div className="detail-row">
-              <p className="detail-label">Speed</p>
-              <p className="detail-value">
-                {weather?.wind?.speed
-                  ? `${(weather.wind.speed * 3.6).toFixed(1)} km/h`
-                  : ""}
-              </p>
+            <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
+              <p className="opacity-80">Wind Speed</p>
+              <p className="text-white font-medium">{(weather?.wind?.speed * 3.6).toFixed(1)} km/h</p>
             </div>
-            <div className="detail-row">
-              <p className="detail-label">Pressure</p>
-              <p className="detail-value">{weather?.main?.pressure} hPa</p>
+            <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
+              <p className="opacity-80">Pressure</p>
+              <p className="text-white font-medium">{weather?.main?.pressure} hPa</p>
             </div>
           </div>
         </div>
       )}
 
       {!weather && (
-        <div className="relative z-10 flex flex-col items-center justify-center mt-20 text-white">
-          <div className="mb-4 text-4xl opacity-80">
-            <i className="fas fa-cloud-sun"></i>
-          </div>
-          <h2 className="mb-2 text-xl font-medium">Welcome to Weather App</h2>
-          <p className="opacity-80">Search for a city to get started</p>
+        <div className="relative z-10 flex flex-col items-center justify-center mt-10 md:mt-20 text-white px-4 text-center">
+          <Motion.div
+            className="text-5xl md:text-6xl mb-4 md:mb-6"
+            initial={{ scale: 0.8, rotate: 0 }}
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 10, -10, 0],
+              textShadow: [
+                "0px 0px 10px rgba(255,255,255,0.5)",
+                "0px 0px 20px rgba(255,255,255,0.8)",
+                "0px 0px 10px rgba(255,255,255,0.5)",
+              ],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            🌦️
+          </Motion.div>
+          <h2 className="mb-2 text-lg md:text-xl font-medium">
+            Welcome to Weather App
+          </h2>
+          <p className="opacity-80 text-sm md:text-base max-w-md">
+            Search for a city to get started and see the current weather conditions
+          </p>
         </div>
       )}
 
-      {/* Toaster */}
       <Toaster
-        position="bottom-right"
+        position="bottom-center md:bottom-right"
         reverseOrder={false}
         toastOptions={{
           style: {
-            fontSize: "8px", 
-            padding: "10px", 
-            background: "#333", 
+            fontSize: "14px",
+            padding: "12px 16px",
+            background: "rgba(0, 0, 0, 0.7)",
             color: "#fff",
+            backdropFilter: "blur(10px)",
+            maxWidth: "90vw",
           },
           success: {
             iconTheme: {
