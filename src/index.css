@@ -12,14 +12,14 @@
   }
 
   .thin-label {
-    @apply font-normal text-white text-[12px];
+    @apply font-normal text-[12px];
   }
 
   .detail-label {
-    @apply font-medium text-white text-[12px];
+    @apply font-medium text-[12px];
   }
 
   .detail-value {
-    @apply font-normal text-white text-[12px];
+    @apply font-normal text-[12px];
   }
 }

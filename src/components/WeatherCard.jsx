@@ -13,7 +13,7 @@ export default function WeatherCard({
     <div className="relative z-10 mx-auto my-4 w-[90%] max-w-2xl p-4 rounded-md bg-[rgba(225,225,225,0.2)] backdrop-blur-sm">
       <div className="flex flex-wrap justify-between items-start">
         <div className="flex flex-col mb-2 md:mb-0">
-          <h2 className="text-xl md:text-2xl font-medium text-white">
+          <h2 className="text-xl md:text-2xl font-medium text-base-content">
             {weather?.name || ""}
             {weather?.sys?.country ? `, ${weather.sys.country}` : ""}
           </h2>
@@ -51,7 +51,7 @@ export default function WeatherCard({
       </div>
 
       <div className="flex gap-2 items-center mt-4">
-        <p className="text-4xl md:text-6xl font-medium text-white">
+        <p className="text-4xl md:text-6xl font-medium text-base-content">
           {weather?.main?.temp
             ? `${Math.round(weather.main.temp)}°${unit}`
             : ""}
@@ -59,7 +59,7 @@ export default function WeatherCard({
 
         <button
           onClick={toggleUnit}
-          className="px-2 py-1 text-white w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.3)] transition-colors"
+          className="px-2 py-1 text-base-content w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.3)] transition-colors"
           aria-label="Toggle temperature unit"
         >
           <span className="font-bold text-sm md:text-base">
@@ -71,25 +71,25 @@ export default function WeatherCard({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-xs md:text-sm">
         <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
           <p className="opacity-80">Feels Like</p>
-          <p className="text-white font-medium">
+          <p className="text-base-content font-medium">
             {Math.round(weather?.main?.feels_like)}°{unit}
           </p>
         </div>
         <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
           <p className="opacity-80">Humidity</p>
-          <p className="text-white font-medium">
+          <p className="text-base-content font-medium">
             {weather?.main?.humidity}%
           </p>
         </div>
         <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
           <p className="opacity-80">Wind Speed</p>
-          <p className="text-white font-medium">
+          <p className="text-base-content font-medium">
             {(weather?.wind?.speed * 3.6).toFixed(1)} km/h
           </p>
         </div>
         <div className="bg-[rgba(255,255,255,0.1)] p-2 rounded-lg">
           <p className="opacity-80">Pressure</p>
-          <p className="text-white font-medium">
+          <p className="text-base-content font-medium">
             {weather?.main?.pressure} hPa
           </p>
         </div>

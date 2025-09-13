@@ -2,7 +2,7 @@ import { motion as Motion } from "framer-motion";
 
 export default function WelcomeScreen() {
   return (
-    <div className="relative z-10 flex flex-col items-center justify-center mt-10 md:mt-20 text-white px-4 text-center">
+    <div className="relative z-10 flex flex-col items-center justify-center mt-10 md:mt-20 text-base-content px-4 text-center">
       <Motion.div
         className="text-5xl md:text-6xl mb-4 md:mb-6"
         initial={{ scale: 0.8, rotate: 0 }}
